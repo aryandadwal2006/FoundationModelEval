@@ -201,13 +201,11 @@ class CLIPEncoder:
                 )
                 input_ids = batch["input_ids"].to(self.device)
                 attention_mask = batch["attention_mask"].to(self.device)
-                features = self.model.get_text_features(
-                    input_ids=input_ids, attention_mask=attention_mask
-                )
-                if hasattr(features, "pooler_output"):
-                    features = features.pooler_output
-                elif isinstance(features, tuple):
-                    features = features[0]
+                features = self.model(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    return_loss=False,
+                ).text_embeds
                 output.append(features.cpu().numpy())
         return np.concatenate(output, axis=0).astype(np.float32)
 
@@ -220,13 +218,10 @@ class CLIPEncoder:
                     for path in paths[start:start + 16]
                 ]
                 batch = self.processor(images=images, return_tensors="pt")
-                features = self.model.get_image_features(
-                    pixel_values=batch["pixel_values"].to(self.device)
-                )
-                if hasattr(features, "pooler_output"):
-                    features = features.pooler_output
-                elif isinstance(features, tuple):
-                    features = features[0]
+                features = self.model(
+                    pixel_values=batch["pixel_values"].to(self.device),
+                    return_loss=False,
+                ).image_embeds
                 output.append(features.cpu().numpy())
         return np.concatenate(output, axis=0).astype(np.float32)
 
