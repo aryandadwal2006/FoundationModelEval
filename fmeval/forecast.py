@@ -271,7 +271,8 @@ def _run_dataset(name, args):
                 model_name, "baseline", predict, test_x, test_y, noisy_x, fit_seconds
             ))
         elif model_name == "seasonal_naive":
-            period = min(24, args.context)
+            seasonal_period = 96 if name.startswith("ETTm") else 24
+            period = min(seasonal_period, args.context)
             predict = lambda x: np.tile(x[:, -period:], (1, int(np.ceil(args.horizon / period))))[:, :args.horizon]
             fit_seconds = 0.0
             rows.append(_evaluate_predictor(
