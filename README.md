@@ -158,7 +158,7 @@ The output directory is created automatically. Runs are deterministic where the 
 
 ## Tests
 
-Run the dependency-light unit tests:
+Run the unit tests:
 
 ```bash
 python -m unittest discover -s tests -v
