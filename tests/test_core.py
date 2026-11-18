@@ -10,8 +10,8 @@ class ForecastTests(unittest.TestCase):
     def test_window_construction(self):
         values = np.arange(12, dtype=np.float32)
         x, y = make_windows(values, context=4, horizon=2, start=4, stop=12, stride=2)
-        self.assertEqual(x.shape, (3, 4))
-        self.assertEqual(y.shape, (3, 2))
+        self.assertEqual(x.shape, (4, 4))
+        self.assertEqual(y.shape, (4, 2))
         np.testing.assert_array_equal(x[0], [0, 1, 2, 3])
         np.testing.assert_array_equal(y[0], [4, 5])
 
