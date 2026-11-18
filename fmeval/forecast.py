@@ -113,9 +113,7 @@ def _fit_mlp(train_x, train_y, epochs, seed):
     model = nn.Sequential(
         nn.Linear(train_x.shape[1], 256),
         nn.GELU(),
-        nn.Linear(256, 128),
-        nn.GELU(),
-        nn.Linear(128, train_y.shape[1]),
+        nn.Linear(256, train_y.shape[1]),
     ).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
     loss_fn = nn.MSELoss()
