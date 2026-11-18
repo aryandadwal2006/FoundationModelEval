@@ -337,6 +337,9 @@ def _run_dataset(name, args):
         "train_windows": int(len(train_x)),
         "test_windows": int(len(test_x)),
         "noise_std": noise_std,
+        "seasonal_period": 96 if name.startswith("ETTm") else 24,
+        "device": "cuda" if torch.cuda.is_available() else "cpu",
+        "timesfm_checkpoint": TIMESFM_ID if "timesfm" in models else None,
         "models": models,
         "finetune": args.finetune,
     }
