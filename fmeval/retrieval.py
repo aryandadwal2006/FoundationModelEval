@@ -315,6 +315,10 @@ def _evaluate_retrieval_model(model_name, encoder, queries, strategies):
 
 
 def run_retrieval(args):
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
     models = [item.strip() for item in args.models.split(",") if item.strip()]
     strategies = [item.strip() for item in args.strategies.split(",") if item.strip()]
     if set(models) - {"minilm", "clip"}:
@@ -379,6 +383,10 @@ def _chunk_repository(repo_path, chunk_lines=80, overlap=10):
 
 
 def run_repo_qa(args):
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
     queries = _load_jsonl(args.queries)
     chunks = _chunk_repository(args.repo_path)
     texts = [item["text"] for item in chunks]
