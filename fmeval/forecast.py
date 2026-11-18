@@ -292,12 +292,20 @@ def _run_dataset(name, args):
         else:
             model, device = _load_timesfm()
             load_seconds = time.perf_counter() - start
+            model_horizon = int(model.config.horizon_length)
+            if args.horizon > model_horizon:
+                raise ValueError(
+                    f"TimesFM supports at most {model_horizon} forecast points; "
+                    f"selected horizon is {args.horizon}"
+                )
             predict = lambda x: _predict_timesfm(
                 model, device, x, args.context, args.horizon
             )
-            rows.append(_evaluate_predictor(
-                model_name, "zero_shot", predict, test_x, test_y, noisy_x, load_seconds
-            ))
+            zero_shot = _evaluate_predictor(
+                model_name, "zero_shot", predict, test_x, test_y, noisy_x, 0.0
+            )
+            zero_shot["model_load_seconds"] = load_seconds
+            rows.append(zero_shot)
             if args.finetune:
                 tune_start = time.perf_counter()
                 train_loss = _finetune_timesfm(
@@ -309,6 +317,7 @@ def _run_dataset(name, args):
                     model_name, "fine_tuned", predict, test_x, test_y, noisy_x, tune_seconds
                 )
                 result["finetune_loss"] = train_loss
+                result["model_load_seconds"] = load_seconds
                 rows.append(result)
             del model
             if device.type == "cuda":
@@ -341,6 +350,8 @@ def run_forecast(args):
         raise ValueError("context must be at least 8 and horizon must be positive")
     if args.max_test_windows < 1 or args.finetune_steps < 1:
         raise ValueError("window and fine-tuning counts must be positive")
+    if args.noise_scale < 0:
+        raise ValueError("noise scale must be non-negative")
     set_seed(args.seed)
     names = list(ETT_URLS) if args.dataset == "all" else [args.dataset]
     rows = []
