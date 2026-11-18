@@ -204,6 +204,10 @@ class CLIPEncoder:
                 features = self.model.get_text_features(
                     input_ids=input_ids, attention_mask=attention_mask
                 )
+                if hasattr(features, "pooler_output"):
+                    features = features.pooler_output
+                elif isinstance(features, tuple):
+                    features = features[0]
                 output.append(features.cpu().numpy())
         return np.concatenate(output, axis=0).astype(np.float32)
 
@@ -219,6 +223,10 @@ class CLIPEncoder:
                 features = self.model.get_image_features(
                     pixel_values=batch["pixel_values"].to(self.device)
                 )
+                if hasattr(features, "pooler_output"):
+                    features = features.pooler_output
+                elif isinstance(features, tuple):
+                    features = features[0]
                 output.append(features.cpu().numpy())
         return np.concatenate(output, axis=0).astype(np.float32)
 
