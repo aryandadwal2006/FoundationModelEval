@@ -125,18 +125,18 @@ def train_step(model, optimizer, inputs, targets):
 
 
 def _render_page(path, title, lines):
-    image = Image.new("RGB", (900, 1160), "white")
+    image = Image.new("RGB", (800, 800), "white")
     draw = ImageDraw.Draw(image)
-    font = ImageFont.load_default()
-    draw.rectangle((48, 48, 852, 1112), outline="black", width=3)
-    draw.text((90, 105), title, fill="black", font=font)
-    draw.line((90, 155, 810, 155), fill="black", width=2)
-    y = 235
+    font = ImageFont.load_default(size=30)
+    draw.rectangle((40, 40, 760, 760), outline="black", width=3)
+    draw.text((80, 100), title, fill="black", font=font)
+    draw.line((80, 170, 720, 170), fill="black", width=2)
+    y = 260
     for line in lines:
-        draw.text((100, y), line, fill="black", font=font)
-        draw.line((100, y + 44, 790, y + 44), fill="gray", width=1)
-        y += 125
-    draw.text((100, 970), "Evaluation corpus sample page", fill="black", font=font)
+        draw.text((90, y), line, fill="black", font=font)
+        draw.line((90, y + 55, 710, y + 55), fill="gray", width=1)
+        y += 115
+    draw.text((90, 680), "Evaluation corpus sample page", fill="black", font=font)
     image.save(path)
 
 
