@@ -47,19 +47,27 @@ def ensure_demo_data():
         {"id": "q_image_health", "modality": "image", "query": "clinical study page showing enrolled participants and treatment groups", "relevant_id": "image_health"},
     ]
 
-    _write_jsonl(RETRIEVAL_ROOT / "documents.jsonl", documents)
-    pd.DataFrame(tables).to_csv(RETRIEVAL_ROOT / "tables.csv", index=False)
-    _write_jsonl(RETRIEVAL_ROOT / "image_manifest.jsonl", [
-        {
-            "id": item["id"],
-            "title": item["title"],
-            "description": item["description"],
-            "image_path": f"data/retrieval/images/{item['id']}.png",
-            "lines": item["lines"],
-        }
-        for item in image_specs
-    ])
-    _write_jsonl(RETRIEVAL_ROOT / "queries.jsonl", queries)
+    documents_path = RETRIEVAL_ROOT / "documents.jsonl"
+    tables_path = RETRIEVAL_ROOT / "tables.csv"
+    manifest_path = RETRIEVAL_ROOT / "image_manifest.jsonl"
+    queries_path = RETRIEVAL_ROOT / "queries.jsonl"
+    if not documents_path.exists():
+        _write_jsonl(documents_path, documents)
+    if not tables_path.exists():
+        pd.DataFrame(tables).to_csv(tables_path, index=False)
+    if not manifest_path.exists():
+        _write_jsonl(manifest_path, [
+            {
+                "id": item["id"],
+                "title": item["title"],
+                "description": item["description"],
+                "image_path": f"data/retrieval/images/{item['id']}.png",
+                "lines": item["lines"],
+            }
+            for item in image_specs
+        ])
+    if not queries_path.exists():
+        _write_jsonl(queries_path, queries)
 
     for item in image_specs:
         path = RETRIEVAL_ROOT / "images" / f"{item['id']}.png"
@@ -102,7 +110,9 @@ def train_step(model, optimizer, inputs, targets):
 ''',
     }
     for filename, source in code_files.items():
-        (CODE_ROOT / filename).write_text(source, encoding="utf-8")
+        path = CODE_ROOT / filename
+        if not path.exists():
+            path.write_text(source, encoding="utf-8")
 
     code_queries = [
         {"id": "code_windowing", "question": "Where are historical context and future target windows constructed?", "expected_paths": ["forecasting.py"]},
@@ -110,7 +120,8 @@ def train_step(model, optimizer, inputs, targets):
         {"id": "code_optimizer", "question": "Where is the model optimizer zeroed, loss backpropagated, and parameters updated?", "expected_paths": ["training.py"]},
         {"id": "code_metric", "question": "Where is mean absolute forecasting error computed?", "expected_paths": ["forecasting.py"]},
     ]
-    _write_jsonl(DATA_ROOT / "code_qa.jsonl", code_queries)
+    if not (DATA_ROOT / "code_qa.jsonl").exists():
+        _write_jsonl(DATA_ROOT / "code_qa.jsonl", code_queries)
 
 
 def _render_page(path, title, lines):
