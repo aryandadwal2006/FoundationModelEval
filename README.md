@@ -87,7 +87,7 @@ ETT data is loaded as public CSV files through Hugging Face Datasets. The target
 
 The split is chronological: the first 70% is used for model fitting, the next 10% is reserved, and the final 20% is evaluated. Training windows use a stride of 32. Test windows do not overlap and never use future observations as context. The same test windows are used for every model.
 
-The robustness measurement adds Gaussian noise to each test context with standard deviation equal to 5% of the training-series standard deviation. The report records the noisy MAE and its change from clean MAE. Inference latency is wall-clock milliseconds per forecast window and is measured separately from model fitting.
+The robustness measurement adds Gaussian noise to each test context with standard deviation equal to 5% of the training-series standard deviation. The report records the noisy MAE and its change from clean MAE. Inference latency is wall-clock milliseconds per forecast window and is measured separately from model fitting and checkpoint loading. The output includes both `fit_seconds` and `model_load_seconds` where applicable. Every model uses the same held-out windows.
 
 TimesFM is loaded from `google/timesfm-2.5-200m-transformers`. Its first run downloads the public checkpoint; CPU inference is supported, while CUDA is used automatically when available. Fine-tuning updates the loaded checkpoint on training windows only.
 
@@ -110,7 +110,7 @@ The benchmark evaluates text, table, and document-image queries. MiniLM is evalu
 Models:
 
 - `minilm`: `sentence-transformers/all-MiniLM-L6-v2`, loaded with AutoTokenizer and AutoModel.
-- `clip`: `openai/clip-vit-base-patch32`, loaded with CLIPProcessor and CLIPModel.
+- `clip`: `openai/clip-vit-base-patch32`, loaded with CLIPProcessor and CLIPModel. It embeds images and text into a shared space.
 
 Retrieval strategies:
 
@@ -118,7 +118,13 @@ Retrieval strategies:
 - `dot`: raw dot-product similarity between dense embeddings.
 - `tfidf`: lexical TF-IDF cosine similarity.
 
-The included corpus is deliberately small so the pipeline is easy to inspect. Replace the generated JSONL, CSV, and image files with your own data using the same manifest fields to evaluate a larger corpus.
+The included corpus is deliberately small so the pipeline is easy to inspect. Demo files are created only when missing, so rerunning a command does not overwrite your edits. For a custom corpus, keep these fields:
+
+- `documents.jsonl`: one JSON object per line with `id` and `text`.
+- `tables.csv`: one row per retrievable record; include a unique `record_id` column. All other columns are converted into searchable text.
+- `image_manifest.jsonl`: one JSON object per line with `id`, `title`, `description`, and `image_path`. Image paths are resolved from the repository working directory.
+- `queries.jsonl`: one JSON object per line with `id`, `modality` (`text`, `table`, or `image`), `query`, and `relevant_id`.
+
 
 ## 3. Repository question-answering benchmark
 
@@ -158,7 +164,7 @@ Run the dependency-light unit tests:
 python -m unittest discover -s tests -v
 ```
 
-The unit tests cover window construction, forecasting metrics, and ranking metrics. Running the full experiments additionally requires downloading the selected public Hugging Face checkpoints and datasets.
+The unit tests cover window construction, forecasting metrics, and ranking metrics. Running the full experiments additionally downloads the selected public Hugging Face checkpoints and datasets. TimesFM fine-tuning is compute-intensive; CUDA is recommended for practical runtimes.
 
 ## Project layout
 
